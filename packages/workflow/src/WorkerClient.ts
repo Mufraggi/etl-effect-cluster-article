@@ -2,7 +2,7 @@ import type { Runners, Sharding } from "@effect/cluster"
 import { ClusterWorkflowEngine, RunnerAddress } from "@effect/cluster"
 import { NodeClusterRunnerSocket } from "@effect/platform-node"
 import type { WorkflowEngine } from "@effect/workflow"
-import { Sql } from "@template/database"
+import { PgLive } from "@template/database/Sql"
 import { Config, Effect, Layer } from "effect"
 
 const ShardingLayer = Layer.unwrapEffect(
@@ -15,12 +15,12 @@ const ShardingLayer = Layer.unwrapEffect(
       clientOnly: true,
       storage: "sql",
       shardingConfig: {
-        shardManagerAddress: RunnerAddress.make(shardManagerHost, 8081)
+        shardManagerAddress: RunnerAddress.make(shardManagerHost, 8080)
       }
     })
   })
 ).pipe(
-  Layer.provide(Sql.PgLive),
+  Layer.provide(PgLive),
   Layer.orDie
 )
 

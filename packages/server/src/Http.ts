@@ -1,11 +1,10 @@
 import { HttpApiBuilder, HttpApiSwagger, HttpMiddleware, HttpServer } from "@effect/platform"
 import { NodeHttpServer } from "@effect/platform-node"
+import { ClusterLayer } from "@template/workflow/WorkerClient"
 import { Layer } from "effect"
 import { createServer } from "http"
 import { Api } from "./Api.js"
 import { HttpApiGroupPokemonLive } from "./pokemon/HttpGroup.js"
-
-import { WorkerClient } from "@template/shardManager"
 
 const api = Api
 
@@ -27,5 +26,5 @@ export const HttpLive = HttpApiBuilder.serve(HttpMiddleware.logger).pipe(
   ),
   HttpServer.withLogAddress,
   Layer.provide(NodeHttpServer.layer(createServer, { port: 8000 })),
-  Layer.provideMerge(WorkerClient.ClusterLayer)
+  Layer.provide(ClusterLayer)
 )

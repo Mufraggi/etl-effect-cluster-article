@@ -7,6 +7,11 @@ import {
   CallPokemonApiWorkFlow,
   makeCallPokemonApiWorkflowLogic
 } from "@template/workflow/CallApiPokemon"
+import {
+  makeTransformPokemonRawWorkflowLogic,
+  TransformPokemonRawService,
+  TransformPokemonRawWorkFlow
+} from "@template/workflow/TransformPokemonRaw"
 import { Effect, Layer, Logger, LogLevel } from "effect"
 
 console.log("🚀 Démarrage du runner...")
@@ -17,16 +22,14 @@ const RunnerLayer = ClusterWorkflowEngine.layer.pipe(
   })),
   Layer.provideMerge(Sql.PgLive)
 )
-/*
-const CallPokemonApiWorkflowLayer = CallApiPokemon.CallPokemonApiWorkFlow.toLayer(
-  Layer.provideMerge(CallPokemonApiService.Default),
-  CallApiPokemon.makeCallPokemonApiWorkflowLogic
-).pipe(
-  Layer.provide(RunnerLayer)
-)*/
+
 const CallPokemonApiWorkflowLayer = CallPokemonApiWorkFlow.toLayer(makeCallPokemonApiWorkflowLogic).pipe(
-  Layer.provideMerge(CallPokemonApiService.Default),
-  Layer.provideMerge(RunnerLayer)
+  Layer.provideMerge(RunnerLayer),
+  Layer.provideMerge(CallPokemonApiService.Default)
+)
+const TransformPokemonRawWorkFlowLayer = TransformPokemonRawWorkFlow.toLayer(makeTransformPokemonRawWorkflowLogic).pipe(
+  Layer.provideMerge(RunnerLayer),
+  Layer.provideMerge(TransformPokemonRawService.Default)
 )
 
 const program = Effect.gen(function*() {
@@ -43,6 +46,7 @@ const program = Effect.gen(function*() {
 const FullLayer = Layer.mergeAll(
   RunnerLayer,
   CallPokemonApiWorkflowLayer,
+  TransformPokemonRawWorkFlowLayer,
   Logger.minimumLogLevel(LogLevel.Debug) // Plus de logs
 )
 

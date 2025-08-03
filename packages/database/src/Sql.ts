@@ -30,12 +30,6 @@ export const PgLive = Layer.unwrapEffect(
       // - 1184: TIMESTAMP WITH TIME ZONE
       // - 3802: JSONB (return as string instead of parsed object)
       types: {
-        114: {
-          to: 25,
-          from: [114],
-          parse: identity,
-          serialize: identity
-        },
         1082: {
           to: 25,
           from: [1082],
@@ -51,12 +45,6 @@ export const PgLive = Layer.unwrapEffect(
         1184: {
           to: 25,
           from: [1184],
-          parse: identity,
-          serialize: identity
-        },
-        3802: {
-          to: 25,
-          from: [3802],
           parse: identity,
           serialize: identity
         }

@@ -3,6 +3,7 @@ import { Workflow } from "@effect/workflow"
 import { PokemonRawRepository } from "@template/database"
 import { PokemonApiResponse } from "@template/domain"
 import { Effect, pipe, Schema } from "effect"
+import { TransformPokemonRawWorkFlow } from "./TransformPokemonRaw.js"
 
 class CallApiPokemonError extends Schema.TaggedError<CallApiPokemonError>(
   "CallApiPokemonError"
@@ -35,14 +36,11 @@ export class CallPokemonApiService extends Effect.Service<CallPokemonApiService>
       const httpClient = yield* HttpClient.HttpClient
 
       return {
-        run: ({ id, pokemonId }: { id: string; pokemonId: number }) =>
+        run: ({ pokemonId }: { id: string; pokemonId: number }) =>
           Effect.gen(function*() {
             const response = yield* httpClient.get(`https://tyradex.vercel.app/api/v1/pokemon/${pokemonId}`)
             const jsonData = yield* response.json
             const pokemon = yield* Schema.decodeUnknown(PokemonApiResponse.PokemonSchema)(jsonData)
-            yield* Effect.logDebug(pokemon)
-
-            console.log(pokemon)
 
             const pokeId = yield* pipe(
               repo.insertPokemonRaw(pokemon),
@@ -50,11 +48,7 @@ export class CallPokemonApiService extends Effect.Service<CallPokemonApiService>
               Effect.tapError((e) => Effect.logError(`❌ Insert error: ${e}`))
             )
             console.log(pokeId)
-            yield* pipe(
-              repo.findById(pokeId.id),
-              Effect.tap((e) => console.log(e)),
-              Effect.tapError((e) => console.log(e))
-            )
+            yield* TransformPokemonRawWorkFlow.execute({ idRaw: pokeId.id })
           }).pipe(
             Effect.catchAll((e) => Effect.fail(new CallApiPokemonError({ message: e.message })))
           )
